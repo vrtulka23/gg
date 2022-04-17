@@ -18,9 +18,9 @@ $(TARGET): $(OBJS)
 	$(CC) -o $@ $^
 
 $(DIR_BUILD)/%.o: $(DIR_SOURCE)/%.cpp
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(INCLUDE) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf $(TARGET) $(DIR_BUILD)
 
-.PHONY: all clean
+.PHONY: all clean directories

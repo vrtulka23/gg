@@ -3,31 +3,25 @@
 #include <sstream>  
 #include <filesystem>
 #include <vector>
-#include "initialize.H"
+#include "GGSettings.H"
 #include "functions.H"
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 using namespace std;
 namespace fs = std::filesystem;
 
-Initialize::Initialize() {
-  cout << tc("red","Welcome to the GG setup!") << endl;
-  dirHome = getenv("HOME");
-  dirGG = dirHome / fs::path(".gg");
-  
-  this->selectProfile();
-  this->initDir();
-  this->determineShell();
-  this->determineEmacs();
-  
-  cout << endl;
-  cout << "Profile:     " << profileName << endl;
-  cout << "Home folder: " << dirHome << endl;
-  cout << "GG folder:   " << dirGG << endl;
-  cout << "Shell file:  " << fileShell << endl;
-  cout << "Emacs file:  " << fileEmacs << endl;
+GGSettings::GGSettings() {
+  struct passwd *pw = getpwuid(getuid());
+  dirHome = fs::path(pw->pw_dir);
+  dirGG = dirHome/fs::path(".gg");
+  if (fs::exists(dirGG)) {
+    isInitialized = true;
+  }
 }
 
-string Initialize::selectOption(std::string question, std::vector<string> options) {
+string GGSettings::selectOption(std::string question, std::vector<string> options) {
   int max = options.size();
   std::vector<string> index;
   for (int i=0; i<max; i++) {
@@ -38,9 +32,11 @@ string Initialize::selectOption(std::string question, std::vector<string> option
   return options[choice];
 }
 
-void Initialize::selectProfile() {
+void GGSettings::initialize() {
+
   cout << endl;
   cout << tc("blue","STEP 0") << endl;
+  
   std::vector<string> options;
   options.push_back("<new>");
   std::string path = "./profiles";
@@ -56,12 +52,11 @@ void Initialize::selectProfile() {
   } else {
     profileName = choice;
   }
-}
 
-void Initialize::initDir() {
   cout << endl;
   cout << tc("blue","STEP 1") << endl;
-  if (fs::exists(dirGG)) {
+  
+  if (isInitialized) {
     cout << "GG directory already exists" << endl;
     int choice = prompt("Do you want to overwrite it? (y/n)", {"n","y"});
     if (choice==1) {
@@ -75,48 +70,54 @@ void Initialize::initDir() {
     cout << "New directory was created: " << dirGG << endl;
     fs::create_directory(dirGG);
   }
-}
 
-void Initialize::determineShell() {
-  fs::path pathList[] = {
+  cout << endl;
+  cout << tc("blue","STEP 2") << endl;
+
+  fs::path pathListBash[] = {
     dirHome / fs::path(".bash_aliases"),
     dirHome / fs::path(".bash_profile"),
     dirHome / fs::path(".bashrc"),
     dirHome / fs::path(".zshrc")
   };
-  std::vector<string> pathFound;
-  for (int i=0; i<size(pathList); i++) {
-    if (fs::exists(pathList[i])) {
-      pathFound.push_back(pathList[i]);
+  std::vector<string> pathFoundBash;
+  for (int i=0; i<size(pathListBash); i++) {
+    if (fs::exists(pathListBash[i])) {
+      pathFoundBash.push_back(pathListBash[i]);
     }
   }
-
-  cout << endl;
-  cout << tc("blue","STEP 2") << endl;
-  if (pathFound.size()>0) {
+  if (pathFoundBash.size()>0) {
     cout << "Following shell files were found:" << endl;
-    string choice = this->selectOption("Select shell script:", pathFound);
+    string choice = this->selectOption("Select shell script:", pathFoundBash);
     fileShell = choice;
-  }
-}
-
-void Initialize::determineEmacs() {
-  fs::path pathList[] = {
-    dirHome / fs::path(".emacs"),
-    dirHome / fs::path(".emacs.d/init.el")
-  };
-  std::vector<string> pathFound;
-  for (int i=0; i<size(pathList); i++) {
-    if (fs::exists(pathList[i])) {
-      pathFound.push_back(pathList[i]);
-    }
   }
 
   cout << endl;
   cout << tc("blue","STEP 3") << endl;
-  if (pathFound.size()>0) {
+
+  fs::path pathListEmacs[] = {
+    dirHome / fs::path(".emacs"),
+    dirHome / fs::path(".emacs.d/init.el")
+  };
+  std::vector<string> pathFoundEmacs;
+  for (int i=0; i<size(pathListEmacs); i++) {
+    if (fs::exists(pathListEmacs[i])) {
+      pathFoundEmacs.push_back(pathListEmacs[i]);
+    }
+  }
+  if (pathFoundEmacs.size()>0) {
     cout << "Following emacs files were found:" << endl;
-    string choice = this->selectOption("Select emacs file", pathFound);
+    string choice = this->selectOption("Select emacs file", pathFoundEmacs);
     fileEmacs = choice;
   }
+
+  cout << endl;
+  cout << tc("blue","STEP 4") << endl;  
+
+  cout << "Following settings were selected:" << endl;
+  cout << "Profile:      " << profileName << endl;
+  cout << "GG directory: " << dirGG << endl;
+  cout << "Shell file:   " << fileShell << endl;
+  cout << "Emacs file:   " << fileEmacs << endl;
+  int correct = prompt("Continue? (y/n)", {"n","y"});
 }

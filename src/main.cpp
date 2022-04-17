@@ -3,7 +3,7 @@
 #include <sstream>  
 #include <filesystem>
 #include <vector>
-#include "initialize.H"
+#include "GG.H"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -33,10 +33,12 @@ class InputParser{
 
 int main(int argc, char **argv)
 {
+  
+  GG gg;
 
   InputParser input(argc, argv);
   if(input.cmdOptionExists("-i")||input.cmdOptionExists("--init")) {
-    Initialize gg;
+    gg.initialize();
   }
   //const std::string &filename = input.getCmdOption("-f");
   //if (!filename.empty()){
