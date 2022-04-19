@@ -2,15 +2,12 @@
 
 ## On Mac OS
 
-* Go to App Store, install Xcode and upgrade cmake
+* Install yaml-cpp (https://codedocs.xyz/jbeder/yaml-cpp/index.html)
   '''
-  sudo xcodebuild -license accept
-  brew upgrade cmake
+  brew install yaml-cpp
   '''
-* Clone and install yaml-cpp (https://codedocs.xyz/jbeder/yaml-cpp/index.html)
+* Set correct include paths in the Makefile
   '''
-  git clone https://github.com/jbeder/yaml-cpp.git
-  mkdir yaml-cpp/build
-  cd yaml-cpp/build
-  cmake -G Xcode ..
+  INC := -I /opt/homebrew/include
+  LIB := -L /opt/homebrew/lib -lyaml-cpp
   '''

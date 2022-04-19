@@ -4,6 +4,8 @@ DIR_BUILD = build
 CC := g++
 CFLAGS := -Wall -std=c++20 -g
 TARGET := gg
+INC := -I /opt/homebrew/include
+LIB := -L /opt/homebrew/lib -lyaml-cpp
 
 SRCS := $(wildcard $(DIR_SOURCE)/*.cpp)
 _OBJS := $(patsubst %.cpp,%.o,$(SRCS))
@@ -15,10 +17,10 @@ directories:
 	mkdir -p $(DIR_BUILD)
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^
+	$(CC) $(INC) $(LIB) -o $@ $^
 
 $(DIR_BUILD)/%.o: $(DIR_SOURCE)/%.cpp
-	$(CC) $(INCLUDE) $(CFLAGS) -c -o $@ $<
+	$(CC) $(INC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -rf $(TARGET) $(DIR_BUILD)
